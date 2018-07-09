@@ -1,33 +1,123 @@
 (
-"Hello there, I'm SuperCollider!".postln;
-"Hello World!".postln;
-"This is another testing line!".postln;
-//{SinOsc.ar(LFNoise0.kr(10).range(500, 1500), mul: 0.1)}.play;
-//s.volume.gui;
-GUI.current;                //current version of GUI
-)
+//******************************************************************//
+//**************************                ************************//
+//************************** AMPLITUDE TEST *****************************//
+//**************************                ************************//
+//******************************************************************//
+var w, amplitudeFader;
+w=Window("Amplitude", Rect(100,500,1000,700));
 
 
-(
-var w;
-w=Window("User Data Entry", Rect(100,500,1000,700));
+
+//************************AMPLITUDE FADER**************************
+//pixels in from left, pixels down from top, width, length
+amplitudeFader=Slider(w,Rect(210, 200, 70, 400));
+
+//callback function: called when attack is changed.
+amplitudeFader.action_({
+	           attackFader.value.postln;
+           });
+
+
+
+
 
 w.front;
 )
-
-
 (
-var f, g;
-f = File("~/Documents/School/Project/test.txt".standardizePath,"w");
+var f, w, amplitudeFader, decayFader, sustainFader, releaseFader, playRandomTone, playUserTone, submit;
+
+//******************************************************************//
+//**************************                ************************//
+//************************** AMPLITUDE TEST *****************************//
+//**************************                ************************//
+//******************************************************************//
+
+//------------------------------------------------------------------//
+//------------------------------DATA COLLECTION---------------------//
+//------------------------------------------------------------------//
+
+//goal: write to text file
+//var f;
+//open an existing file for writing and appending (writes happen at end)
+f=File("~/Documents/School/Project/test.txt".standardizePath,"a+");
+
+//write some stuff to it
 f.write("Does this work?\n is this thing on ?\n");
 f.write("This is the second write.\n");
+//print the file to post window to prove we are reading the correct file
+f.readAllString.postln;
+
+
+//close it for now
 f.close;
+
+//------------------------------------------------------------------//
+//------------------------------GUI---------------------------------//
+//------------------------------------------------------------------//
+
+
+w=Window("Amplitude Test", Rect(100,500,1000,700));
+//coordinates: (x,y)=(100, 500)  dimensions: width*length =1000*700
+
+//---------------------------BUTTONS-------------------------------//
+
+//NOTES
+//Need to add 'down' actions(see manual)
+playRandomTone=Button(w, Rect(400,100,200,30))
+                      .states_([
+	                      ['play random tone', Color.black, Color.white]
+                      ])
+                      .mouseDownAction_({
+	                      f.open("~/Documents/School/Project/test.txt".standardizePath,"a+");
+	                      f.write("playRandomTone button was pressed down.\n");
+	                      f.close;
+                      })
+                      .action_({ arg butt;
+	                             butt.value.postln;
+                      });
+
+
+playUserTone=Button(w, Rect(400,650,200,30))
+                      .states_([
+	                      ['play user tone', Color.black, Color.white]
+                      ])
+                      .mouseDownAction_({
+	                      f.open("~/Documents/School/Project/test.txt".standardizePath,"a+");
+	                      f.write("playUserTone button was pressed down.\n");
+	                      f.close;
+                      })
+                      .action_({ arg butt;
+	                             butt.value.postln;
+                      });
+
+submit=Button(w, Rect(850,650,100,30))
+                      .states_([
+	                      ['submit', Color.black, Color.white]
+                      ])
+                      .mouseDownAction_({
+	                      f.open("~/Documents/School/Project/test.txt".standardizePath,"a+");
+	                      f.write("submit button was pressed down.\n");
+	                      f.close;
+                          w.close;
+                      })
+                      .action_({ arg butt;
+	                             butt.value.postln;
+                      });
+
+//-----------------------------AMPLITUDE FADER---------------------------------
+//pixels in from left, pixels down from top, width, length
+amplitudeFader=Slider(w,Rect(470, 200, 70, 400));
+
+//callback function: called when attack is changed.
+amplitudeFader.action_({
+	           amplitudeFader.value.postln;
+           });
+
+
+
+w.front; //make the window appear
 )
-
-(
-
-)
-
 
 (
 var f, w, attackFader, decayFader, sustainFader, releaseFader, playRandomTone, playUserTone, submit;
@@ -105,6 +195,7 @@ submit=Button(w, Rect(850,650,100,30))
 	                      f.open("~/Documents/School/Project/test.txt".standardizePath,"a+");
 	                      f.write("submit button was pressed down.\n");
 	                      f.close;
+                          w.close;
                       })
                       .action_({ arg butt;
 	                             butt.value.postln;
