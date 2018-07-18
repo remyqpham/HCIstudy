@@ -89,6 +89,11 @@ playRandomTone=Button(w, Rect(400,125,200,30))
                       ])
                       .mouseDownAction_({
 	                      //play sample at random amplitude (based on trial) (need to add amplitude)
+                          x = SynthDef(\help_Buffer, { arg out = 0, bufnum;
+                              Out.ar( out,
+                                  PlayBuf.ar(2, bufnum, BufRateScale.kr(bufnum))*randomAmplitudes[currTrial-1]
+                              )
+                          });
 	                      x.play(s,[\bufnum, b]);
                       })
                       .action_({ arg butt;
@@ -101,6 +106,11 @@ playUserTone=Button(w, Rect(400,650,200,30))
                       ])
                       .mouseDownAction_({
 	                      //play sample at user's amplitude (at the time of pressing, the amplitude should already be set to fader amp)
+                          x = SynthDef(\help_Buffer, { arg out = 0, bufnum;
+                              Out.ar( out,
+                                  PlayBuf.ar(2, bufnum, BufRateScale.kr(bufnum))*userToneAmplitude
+                              )
+                          });
 	                      x.play(s,[\bufnum, b]);
                       })
                       .action_({ arg butt;
