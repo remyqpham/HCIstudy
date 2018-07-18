@@ -1,8 +1,26 @@
+(
+var randomAmplitudes, userAmplitudes, userAmplitudeErrors, calculateAmplitudeError, calculateUserAmplitudeErrors;
+randomAmplitudes=[0.462, 0.286, 0.735, 0.771, 0.336, 0.234, 0.630, 0.939, 0.225, 0.614];
+userAmplitudes=[0.527,0.527,0.465,0.345,0.345,0.4563452,0.245626,0.874567,0.2456456,0.24564256];
+userAmplitudeErrors=[0,0,0,0,0,0,0,0,0,0];
+
+calculateUserAmplitudeErrors={
+    arg array, array2, errors;
+    for(0,9, {
+        arg i;
+        errors[i]=array2[i]-array[i];
+    });
+    errors.postln;
+
+};
+
+calculateUserAmplitudeErrors.value(randomAmplitudes, userAmplitudes, userAmplitudeErrors);
 
 
+)
 
 (
-var f, w, p, b, x, title, amplitudeFader, playRandomTone, playUserTone, submit, numTrials, currTrial, currTrialText, randomAmplitudes, userToneAmplitude, loadSample, userAmplitudes, attackFader, decayFader, sustainFader, releaseFader, windowADSR, adsr_title, adsr_currTrialText, adsr_playRandomTone, adsr_playUserTone, adsr_submit, userADSR;
+var f, w, p, b, x, title, amplitudeFader, playRandomTone, playUserTone, submit, numTrials, currTrial, currTrialText, randomAmplitudes, userToneAmplitude, loadSample, userAmplitudes, attackFader, decayFader, sustainFader, releaseFader, windowADSR, adsr_title, adsr_currTrialText, adsr_playRandomTone, adsr_playUserTone, adsr_submit, userADSR, userAmplitudeErrors, calculateUserAmplitudeErrors;
 
 //*************************************************************************************************************************************//
 //**************************************************                                 ****************************************************************//
@@ -15,6 +33,7 @@ currTrial=1;
 randomAmplitudes=[0.462, 0.286, 0.735, 0.771, 0.336, 0.234, 0.630, 0.939, 0.225, 0.614];
 userAmplitudes=[0,0,0,0,0,0,0,0,0,0];
 userToneAmplitude=0;
+userAmplitudeErrors=[0,0,0,0,0,0,0,0,0,0];
 
 //------------------------------------------------------------------------------//
 //--------------------------SAMPLE LOADING--------------------------//
@@ -65,6 +84,17 @@ f.readAllString.postln;
 //close it for now
 f.close;
 
+//calculates the errors for each user amplitude guess
+calculateUserAmplitudeErrors={
+    arg array, array2, errors;
+    for(0,9, {
+        arg i;
+        errors[i]=array2[i]-array[i];
+    });
+    errors.postln;
+
+};
+
 //-----------------------------------------------------------------------------//
 //------------------------------GUI-----------------------------------------//
 //-----------------------------------------------------------------------------//
@@ -105,17 +135,18 @@ playUserTone=Button(w, Rect(400,650,200,30))
 	                      ['Play User Tone', Color.black, Color.white]
                       ])
                       .mouseDownAction_({
-	                      //play sample at user's amplitude (at the time of pressing, the amplitude should already be set to fader amp)
+                          //set sample to user's amplitude
                           x = SynthDef(\help_Buffer, { arg out = 0, bufnum;
                               Out.ar( out,
                                   PlayBuf.ar(2, bufnum, BufRateScale.kr(bufnum))*userToneAmplitude
                               )
                           });
+                          //play sample
 	                      x.play(s,[\bufnum, b]);
                       })
                       .action_({ arg butt;
 	                             //butt.value.postln;
-	                             //userToneAmplitude=butt.value;
+
                       });
 
 submit=Button(w, Rect(750,650,100,30))
@@ -144,7 +175,12 @@ submit=Button(w, Rect(750,650,100,30))
                                  b=Buffer.read(s,p);
 
 	                             if(currTrial==11)
-		                             {userAmplitudes.postln;
+                                      {"Your Amplitude Guesses".postln;
+                                      userAmplitudes.postln;
+                                      "True Amplitude".postln;
+                                      randomAmplitudes.postln;
+                                      "User Errors".postln;
+                                      calculateUserAmplitudeErrors.value(randomAmplitudes, userAmplitudes, userAmplitudeErrors);
                                       currTrial=1;
 		                              w.close;
                                       windowADSR.front;}{};
@@ -158,7 +194,7 @@ amplitudeFader=Slider(w,Rect(470, 200, 70, 400));
 
 //callback function: called when attack is changed.
 amplitudeFader.action_({
-	           userToneAmplitude=amplitudeFader.value; //maybe not necessary
+	           userToneAmplitude=amplitudeFader.value;
            });
 
 w.front; //make the window appear
