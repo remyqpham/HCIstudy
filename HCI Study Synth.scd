@@ -1,26 +1,17 @@
 (
-var randomAmplitudes, userAmplitudes, userAmplitudeErrors, calculateAmplitudeError, calculateUserAmplitudeErrors;
-randomAmplitudes=[0.462, 0.286, 0.735, 0.771, 0.336, 0.234, 0.630, 0.939, 0.225, 0.614];
-userAmplitudes=[0.527,0.527,0.465,0.345,0.345,0.4563452,0.245626,0.874567,0.2456456,0.24564256];
-userAmplitudeErrors=[0,0,0,0,0,0,0,0,0,0];
 
-calculateUserAmplitudeErrors={
-    arg array, array2, errors;
-    for(0,9, {
-        arg i;
-        errors[i]=array2[i]-array[i];
-    });
-    errors.postln;
 
-};
+// { SinOsc.ar(4, 0, 0.5) }.play;
 
-calculateUserAmplitudeErrors.value(randomAmplitudes, userAmplitudes, userAmplitudeErrors);
+
+
+
 
 
 )
 
 (
-var f, w, p, b, x, title, amplitudeFader, playRandomTone, playUserTone, submit, numTrials, currTrial, currTrialText, randomAmplitudes, userToneAmplitude, loadSample, userAmplitudes, attackFader, decayFader, sustainFader, releaseFader, windowADSR, adsr_title, adsr_currTrialText, adsr_playRandomTone, adsr_playUserTone, adsr_submit, userADSR, userAmplitudeErrors, calculateUserAmplitudeErrors;
+var f, w, p, b, x, title, amplitudeFader, playRandomTone, playUserTone, submit, numTrials, currTrial, currTrialText, randomAmplitudes, userToneAmplitude, loadSample, userAmplitudes, attackFader, decayFader, sustainFader, releaseFader, windowADSR, adsr_title, adsr_currTrialText, adsr_playRandomTone, adsr_playUserTone, adsr_submit, userADSR, userAmplitudeErrors, calculateUserAmplitudeErrors, windowFreq, freq_title, freq_currTrialText;
 
 //*************************************************************************************************************************************//
 //**************************************************                                 ****************************************************************//
@@ -92,7 +83,6 @@ calculateUserAmplitudeErrors={
         errors[i]=array2[i]-array[i];
     });
     errors.postln;
-
 };
 
 //-----------------------------------------------------------------------------//
@@ -146,7 +136,6 @@ playUserTone=Button(w, Rect(400,650,200,30))
                       })
                       .action_({ arg butt;
 	                             //butt.value.postln;
-
                       });
 
 submit=Button(w, Rect(750,650,100,30))
@@ -198,6 +187,52 @@ amplitudeFader.action_({
            });
 
 w.front; //make the window appear
+
+//***************************************************************************************************************************//
+//**************************************************                                   *****************************************************//
+//************************************************** FREQUENCY TEST *****************************************************//
+//**************************************************                                   *****************************************************//
+//***************************************************************************************************************************//
+
+//-------------------------------------------------------------------------------//
+//------------------------DATA COLLECTION---------------------------//
+//-------------------------------------------------------------------------------//
+
+
+
+
+
+
+
+//-----------------------------------------------------------------------------//
+//------------------------------GUI-----------------------------------------//
+//-----------------------------------------------------------------------------//
+
+windowFreq=Window("Frequency Test", Rect(100, 500, 1000, 700));
+
+freq_title = StaticText(windowFreq, Rect(250,25,500,75)).string_("Frequency Test");
+freq_title.align=\center;
+freq_title.font=Font("Monaco",50,true);
+
+freq_currTrialText=StaticText(windowFreq, Rect(850, 650, 100, 30)).string_(currTrial+"/10");
+freq_currTrialText.align=\center;
+
+//------------------------------------------------------------------------//
+//---------------------------BUTTONS-------------------------------//
+//------------------------------------------------------------------------//
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 //********************************************************************************************************************//
 //**************************************************                      *****************************************************//
