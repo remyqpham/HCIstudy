@@ -11,7 +11,21 @@
 )
 
 (
-var f, w, p, b, x, title, amplitudeFader, playRandomTone, playUserTone, submit, numTrials, currTrial, currTrialText, randomAmplitudes, userToneAmplitude, loadSample, userAmplitudes, attackFader, decayFader, sustainFader, releaseFader, windowADSR, adsr_title, adsr_currTrialText, adsr_playRandomTone, adsr_playUserTone, adsr_submit, userADSR, userAmplitudeErrors, calculateUserAmplitudeErrors, windowFreq, freq_title, freq_currTrialText;
+var f, w, p, b, x, title, amplitudeFader, playRandomTone, playUserTone, submit, numTrials, currTrial, currTrialText, randomAmplitudes, userToneAmplitude, loadSample, userAmplitudes, attackFader, decayFader, sustainFader, releaseFader, windowADSR, adsr_title, adsr_currTrialText, adsr_playRandomTone, adsr_playUserTone, adsr_submit, userADSR, userAmplitudeErrors, calculateUserErrors, windowFreq, freq_title, freq_currTrialText, freq_playRandomTone, freq_playUserTone, freq_submit, randomFrequencies, userFrequencies, userToneFrequency, userFrequencyErrors, numClicksUserTone, numClicksRandomTone, frequencyFader;
+
+//--------------------------------------------------------------------------//
+//--------------------Data Collection Functions------------------//
+//--------------------------------------------------------------------------//
+
+//write to file the number of times randomTone is played
+
+
+
+//write to file the number of times userTone is played
+
+
+
+
 
 //*************************************************************************************************************************************//
 //**************************************************                                 ****************************************************************//
@@ -21,10 +35,9 @@ var f, w, p, b, x, title, amplitudeFader, playRandomTone, playUserTone, submit, 
 
 numTrials=10;
 currTrial=1;
-randomAmplitudes=[0.462, 0.286, 0.735, 0.771, 0.336, 0.234, 0.630, 0.939, 0.225, 0.614];
-userAmplitudes=[0,0,0,0,0,0,0,0,0,0];
-userToneAmplitude=0;
-userAmplitudeErrors=[0,0,0,0,0,0,0,0,0,0];
+numClicksUserTone=[0,0,0,0,0,0,0,0,0,0];
+numClicksRandomTone=[0,0,0,0,0,0,0,0,0,0];
+
 
 //------------------------------------------------------------------------------//
 //--------------------------SAMPLE LOADING--------------------------//
@@ -62,6 +75,11 @@ loadSample={arg a;
 //------------------------------DATA COLLECTION---------------------//
 //-------------------------------------------------------------------------------//
 
+randomAmplitudes=[0.462, 0.286, 0.735, 0.771, 0.336, 0.234, 0.630, 0.939, 0.225, 0.614];
+userAmplitudes=[0,0,0,0,0,0,0,0,0,0];
+userToneAmplitude=0;
+userAmplitudeErrors=[0,0,0,0,0,0,0,0,0,0];
+
 //goal: write to text file
 //open an existing file for writing and appending (writes happen at end)
 f=File("~/Documents/School/Project/test.txt".standardizePath,"a+");
@@ -75,8 +93,8 @@ f.readAllString.postln;
 //close it for now
 f.close;
 
-//calculates the errors for each user amplitude guess
-calculateUserAmplitudeErrors={
+//calculates the errors for each user amplitude/frequency guess
+calculateUserErrors={
     arg array, array2, errors;
     for(0,9, {
         arg i;
@@ -114,7 +132,10 @@ playRandomTone=Button(w, Rect(400,125,200,30))
                                   PlayBuf.ar(2, bufnum, BufRateScale.kr(bufnum))*randomAmplitudes[currTrial-1]
                               )
                           });
+                          //play sample
 	                      x.play(s,[\bufnum, b]);
+                          //record the click in numClicksRandomTone
+                          numClicksRandomTone[currTrial-1]=numClicksRandomTone[currTrial-1]+1
                       })
                       .action_({ arg butt;
 	                             //butt.value.postln;
@@ -133,6 +154,8 @@ playUserTone=Button(w, Rect(400,650,200,30))
                           });
                           //play sample
 	                      x.play(s,[\bufnum, b]);
+                          //record the click in numClicksUserTone
+                          numClicksUserTone[currTrial-1]=numClicksUserTone[currTrial-1]+1
                       })
                       .action_({ arg butt;
 	                             //butt.value.postln;
@@ -169,10 +192,24 @@ submit=Button(w, Rect(750,650,100,30))
                                       "True Amplitude".postln;
                                       randomAmplitudes.postln;
                                       "User Errors".postln;
-                                      calculateUserAmplitudeErrors.value(randomAmplitudes, userAmplitudes, userAmplitudeErrors);
+                                      calculateUserErrors.value(randomAmplitudes, userAmplitudes, userAmplitudeErrors);
+                                      "Random Tone Clicks".postln;
+                                      numClicksRandomTone.postln;
+                                      "User Tone Clicks".postln;
+                                      numClicksUserTone.postln;
+                                      //record numClicks into CSV
+
+
+                                      //reset current trial counter
                                       currTrial=1;
+                                      //reset numClicksUserTone
+                                      numClicksUserTone=[0,0,0,0,0,0,0,0,0,0];
+                                      //reset numClicksRandomTone
+                                      numClicksRandomTone=[0,0,0,0,0,0,0,0,0,0];
+                                      //close Amplitude window
 		                              w.close;
-                                      windowADSR.front;}{};
+                                      //open Frequency test window
+                                      windowFreq.front;}{};
 	                             currTrialText.string=currTrial+"/10";
                       });
 //-----------------------------------------------------------------------------------------//
@@ -198,11 +235,10 @@ w.front; //make the window appear
 //------------------------DATA COLLECTION---------------------------//
 //-------------------------------------------------------------------------------//
 
-
-
-
-
-
+randomFrequencies=[0.462, 0.286, 0.735, 0.771, 0.336, 0.234, 0.630, 0.939, 0.225, 0.614];
+userFrequencies=[0,0,0,0,0,0,0,0,0,0];
+userToneFrequency=0;
+userFrequencyErrors=[0,0,0,0,0,0,0,0,0,0];
 
 //-----------------------------------------------------------------------------//
 //------------------------------GUI-----------------------------------------//
@@ -221,17 +257,93 @@ freq_currTrialText.align=\center;
 //---------------------------BUTTONS-------------------------------//
 //------------------------------------------------------------------------//
 
+freq_playRandomTone=Button(windowFreq, Rect(300,125,400,30))
+                      .states_([
+                          ['Play Sine Tone (random frequency)', Color.black, Color.white]
+                      ])
+                      .mouseDownAction_({
+	                      //play sine tone at random frequency
+
+
+                          //record the click in numClicksRandomTone
+                          numClicksRandomTone[currTrial-1]=numClicksRandomTone[currTrial-1]+1
+
+                      })
+                      .action_({ arg butt;
+	                             //butt.value.postln;
+                      });
+
+freq_playUserTone=Button(windowFreq, Rect(400,650,200,30))
+                      .states_([
+                          ['Play User Sine Tone (Random Frequency)', Color.black, Color.white]
+                      ])
+                      .mouseDownAction_({
+                          //play sine tone at user frequency
+
+                          //record the click in numClicksUserTone
+                          numClicksUserTone[currTrial-1]=numClicksUserTone[currTrial-1]+1
+                      })
+                      .action_({ arg butt;
+	                             //butt.value.postln;
+                      });
+
+freq_submit=Button(windowFreq, Rect(750,650,100,30))
+                      .states_([
+	                      ['Submit', Color.black, Color.white]
+                      ])
+                      .mouseDownAction_({
+	                      f.open("~/Documents/School/Project/test.txt".standardizePath,"a+");
+	                      f.write("frequency submit button was pressed down.\n");
+	                      f.close;
+                          //w.close;
+                      })
+                      .action_({
+	                             //log user's FREQUENCY guess
+	                             userFrequencies[currTrial-1]=userToneFrequency;
+
+	                             //update current trial
+	                             currTrial=currTrial+1;
+
+
+                                 //load the next frequency into sin wave (?)
+
+
+	                             if(currTrial==11)
+                                      {"Your Frequency Guesses".postln;
+                                      userFrequencies.postln;
+                                      "True Frequencies".postln;
+                                      randomFrequencies.postln;
+                                      "User Errors".postln;
+                                      calculateUserErrors.value(randomFrequencies, userFrequencies, userFrequencyErrors);
+
+                                      "Random Tone Clicks (frequency test)".postln;
+                                      numClicksRandomTone.postln;
+                                      "User Tone Clicks (frequency test)".postln;
+                                      numClicksUserTone.postln;
+
+                                      //record numClicks into CSV
 
 
 
+                                      currTrial=1;
+                                      //reset numClicksUserTone
+                                      numClicksUserTone=[0,0,0,0,0,0,0,0,0,0];
+                                      //reset numClicksRandomTone
+                                      numClicksRandomTone=[0,0,0,0,0,0,0,0,0,0];
+		                              windowFreq.close;
+                                      windowADSR.front;}{};
+	                             freq_currTrialText.string=currTrial+"/10";
+                      });
 
+//-----------------------------------------------------------------------------------------//
+//-----------------------------FREQUENCY FADER--------------------------------//
+//-----------------------------------------------------------------------------------------//
 
+frequencyFader=Slider(windowFreq,Rect(470, 200, 70, 400));
 
-
-
-
-
-
+frequencyFader.action_({
+	           userToneFrequency=frequencyFader.value;
+           });
 
 
 //********************************************************************************************************************//
@@ -347,14 +459,6 @@ releaseFader=Slider(windowADSR,Rect(720, 200, 70, 400));
 releaseFader.action_({
     userADSR[3]=releaseFader.value;
 });
-
-
-
-
-
-
-
-
 
 
 
