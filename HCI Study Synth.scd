@@ -1,35 +1,75 @@
-(
-
-
-{ SinOsc.ar(440, 0, 0.5) }.play;
-
-
-
-
-
-
-)
 
 (
-var f, w, p, b, x, title, amplitudeFader, playRandomTone, playUserTone, submit, numTrials, currTrial, currTrialText, randomAmplitudes, userToneAmplitude, loadSample, userAmplitudes, attackFader, decayFader, sustainFader, releaseFader, windowADSR, adsr_title, adsr_currTrialText, adsr_playRandomTone, adsr_playUserTone, adsr_submit, userADSR, userAmplitudeErrors, calculateUserErrors, windowFreq, freq_title, freq_currTrialText, freq_playRandomTone, freq_playUserTone, freq_submit, randomFrequencies, userFrequencies, userToneFrequency, userFrequencyErrors, numClicksUserTone, numClicksRandomTone, frequencyFader, randomAmplitudesDB;
+var f, w, p, b, x, title, amplitudeFader, playRandomTone, playUserTone, submit, numTrials, currTrial, currTrialText, randomAmplitudes, userToneAmplitude, loadSample, userAmplitudes, attackFader, decayFader, sustainFader, releaseFader, windowADSR, adsr_title, adsr_currTrialText, adsr_playRandomTone, adsr_playUserTone, adsr_submit, userADSR, userAmplitudeErrors, calculateUserErrors, windowFreq, freq_title, freq_currTrialText, freq_playRandomTone, freq_playUserTone, freq_submit, randomFrequencies, userFrequencies, userToneFrequency, userFrequencyErrors, numClicksUserTone, numClicksRandomTone, frequencyFader, randomAmplitudesDB, writeData, testvar, updateTrialText;
 
+
+
+
+testvar=0;
 //--------------------------------------------------------------------------//
-//--------------------Data Collection Functions------------------//
+//--------------------------Data Collection Functions-----------------------//
 //--------------------------------------------------------------------------//
+//goal: write to text file
+//open an existing file for writing and appending (writes happen at end)
+f=File("~/Documents/School/Project/user_1.txt".standardizePath,"a+");                                                         //change user # here <------------
+
+//close it for now
+f.close;
+
+//calculates the errors for each user amplitude/frequency guess
+calculateUserErrors={
+    arg array, array2, errors;
+    for(0,9, {
+        arg i;
+        errors[i]=array2[i]-array[i];
+    });
+    errors.postln;
+};
+
+
 
 //Amplitude/Frequency Test CSV format:
 // trial #   numClicksUserTone   numClicksRandomTone   randomAmp   userAmp   error   timing
 
-//writeData={arg userClicks, randomClicks, randomAmp, userAmp, error /*, timing*/;
+writeData={arg test, file, userClicks, randomClicks, randomVal, userVal, error /*, timing*/;
+    file.open("~/Documents/School/Project/user_1.txt".standardizePath,"a+");                                                //change user # here <------------
+    if(test==0){file.write("trial, numClicksUserTone, numClicksRandomTone, randomAmp, userAmp, error\n");}{};
+    if(test==1){file.write("trial, numClicksUserTone, numClicksRandomTone, randomFreq, userFreq, error\n");}{};
+    for(0,9, {
+        arg i;
+        //print trial number
+        file.write((i+1).asCompileString ++ ", ");
+
+        //print userClicks
+        file.write(userClicks[i].asCompileString ++ ", ");
+
+        //print randomClicks
+        file.write(randomClicks[i].asCompileString ++ ", ");
+
+        //print randomVal (amp or freq)
+        file.write(randomVal[i].asCompileString ++ ", ");
+
+        //print userVal
+        file.write(userVal[i].asCompileString ++ ", ");
+
+        //print error
+        file.write(error[i].asCompileString ++ ", ");
+
+        //print timing
 
 
+        //print newline
+        file.write("\n")
+    });
 
+    file.close;
+};
 
-//*************************************************************************************************************************************//
-//**************************************************                                 ****************************************************************//
-//************************************************** AMPLITUDE TEST ***************************************************************//
-//**************************************************                                  ***************************************************************//
-//*************************************************************************************************************************************//
+//*********************************************************************************************************//
+//*********************************************************************************************************//
+//******************************************* AMPLITUDE TEST **********************************************//
+//*********************************************************************************************************//
+//*********************************************************************************************************//
 
 numTrials=10;
 currTrial=1;
@@ -38,7 +78,7 @@ numClicksRandomTone=[0,0,0,0,0,0,0,0,0,0];
 
 
 //------------------------------------------------------------------------------//
-//--------------------------SAMPLE LOADING--------------------------//
+//-----------------------------------SAMPLE LOADING-----------------------------//
 //------------------------------------------------------------------------------//
 
 //start server
@@ -70,9 +110,8 @@ loadSample={arg a;
 };
 
 //-------------------------------------------------------------------------------//
-//------------------------------DATA COLLECTION---------------------//
+//------------------------------------DATA --------------------------------------//
 //-------------------------------------------------------------------------------//
-
 
 randomAmplitudes=[0.462, 0.286, 0.735, 0.771, 0.336, 0.234, 0.630, 0.939, 0.225, 0.614];
 randomAmplitudesDB=randomAmplitudes.ampdb;
@@ -80,29 +119,8 @@ userAmplitudes=[0,0,0,0,0,0,0,0,0,0];
 userToneAmplitude=0;
 userAmplitudeErrors=[0,0,0,0,0,0,0,0,0,0];
 
-//goal: write to text file
-//open an existing file for writing and appending (writes happen at end)
-f=File("~/Documents/School/Project/test.txt".standardizePath,"a+");
-
-//write some stuff to it
-f.write("Does this work?\n is this thing on ?\n");
-f.write("This is the second write.\n");
-
-//close it for now
-f.close;
-
-//calculates the errors for each user amplitude/frequency guess
-calculateUserErrors={
-    arg array, array2, errors;
-    for(0,9, {
-        arg i;
-        errors[i]=array2[i]-array[i];
-    });
-    errors.postln;
-};
-
 //-----------------------------------------------------------------------------//
-//------------------------------GUI-----------------------------------------//
+//------------------------------GUI--------------------------------------------//
 //-----------------------------------------------------------------------------//
 
 w=Window("Amplitude Test", Rect(100,500,1000,700));
@@ -116,7 +134,7 @@ currTrialText=StaticText(w, Rect(850, 650, 100, 30)).string_(currTrial+"/10");
 currTrialText.align=\center;
 
 //------------------------------------------------------------------------//
-//---------------------------BUTTONS-------------------------------//
+//---------------------------BUTTONS--------------------------------------//
 //------------------------------------------------------------------------//
 
 playRandomTone=Button(w, Rect(400,125,200,30))
@@ -124,7 +142,7 @@ playRandomTone=Button(w, Rect(400,125,200,30))
 	                      ['Play Sample', Color.black, Color.white]
                       ])
                       .mouseDownAction_({
-	                      //play sample at random amplitude (based on trial) (need to add amplitude)
+	                      //play sample at random amplitude (based on trial)
                           x = SynthDef(\help_Buffer, { arg out = 0, bufnum;
                               Out.ar( out,
                                   PlayBuf.ar(2, bufnum, BufRateScale.kr(bufnum))*randomAmplitudes[currTrial-1]
@@ -195,8 +213,10 @@ submit=Button(w, Rect(750,650,100,30))
                                       numClicksRandomTone.postln;
                                       "User Tone Clicks".postln;
                                       numClicksUserTone.postln;
-                                      //record numClicks into CSV
-
+                                      //record data into CSV
+                                      // trial #   numClicksUserTone   numClicksRandomTone   randomAmp   userAmp   error   timing
+                                      writeData.value(testvar, f, numClicksUserTone, numClicksRandomTone, randomAmplitudes, userAmplitudes, userAmplitudeErrors);
+                                      testvar=1;
 
                                       //reset current trial counter
                                       currTrial=1;
@@ -210,6 +230,11 @@ submit=Button(w, Rect(750,650,100,30))
                                       windowFreq.front;}{};
 	                             currTrialText.string=currTrial+"/10";
                       });
+
+
+
+
+
 //-----------------------------------------------------------------------------------------//
 //-----------------------------AMPLITUDE FADER---------------------------------//
 //-----------------------------------------------------------------------------------------//
@@ -278,13 +303,13 @@ freq_playRandomTone=Button(windowFreq, Rect(300,125,400,30))
 	                             //butt.value.postln;
                       });
 
-freq_playUserTone=Button(windowFreq, Rect(400,650,200,30))
+freq_playUserTone=Button(windowFreq, Rect(300,650,400,30))
                       .states_([
                           ['Play User Sine Tone (Random Frequency)', Color.black, Color.white]
                       ])
                       .mouseDownAction_({
                           //play sine tone at user frequency
-
+                          Synth(\freq_Test, [\freq, userToneFrequency]);
                           //record the click in numClicksUserTone
                           numClicksUserTone[currTrial-1]=numClicksUserTone[currTrial-1]+1
                       })
@@ -326,9 +351,9 @@ freq_submit=Button(windowFreq, Rect(750,650,100,30))
                                       "User Tone Clicks (frequency test)".postln;
                                       numClicksUserTone.postln;
 
-                                      //record numClicks into CSV
-
-
+                                      //record data into CSV
+                                      // trial #   numClicksUserTone   numClicksRandomTone   randomFreq   userFreq  error   timing
+                                      writeData.value(testvar, f, numClicksUserTone, numClicksRandomTone, randomFrequencies, userFrequencies, userFrequencyErrors);
 
                                       currTrial=1;
                                       //reset numClicksUserTone
@@ -336,7 +361,8 @@ freq_submit=Button(windowFreq, Rect(750,650,100,30))
                                       //reset numClicksRandomTone
                                       numClicksRandomTone=[0,0,0,0,0,0,0,0,0,0];
 		                              windowFreq.close;
-                                      windowADSR.front;}{};
+
+                                      /*windowADSR.front;*/}{};
 	                             freq_currTrialText.string=currTrial+"/10";
                       });
 
@@ -347,9 +373,140 @@ freq_submit=Button(windowFreq, Rect(750,650,100,30))
 frequencyFader=Slider(windowFreq,Rect(470, 200, 70, 400));
 
 frequencyFader.action_({
-	           userToneFrequency=frequencyFader.value;
-           });
+	userToneFrequency= (10**(frequencyFader.value.linlin(0,1,log10(220),log10(20000))));
+    //(10**(frequencyFader.value.linlin(0,1,log10(220),log10(20000)))).postln;
 
+});
+
+
+//--------------------------------------------------------------------------//
+//--------------------------------MIDI Stuff--------------------------------//
+//--------------------------------------------------------------------------//
+
+MIDIClient.init;
+MIDIIn.connectAll;
+MIDIClient.sources;
+MIDIdef.noteOn(\print, {arg val, num, chan, src;
+    //[src,chan, num, val].postln;
+    //playRandomTone button press
+    if(num==1){"[Amplitude] playRandomTone button pressed".postln;
+        //play sample at random amplitude (based on trial)
+        x = SynthDef(\help_Buffer, { arg out = 0, bufnum;
+            Out.ar( out,
+                PlayBuf.ar(2, bufnum, BufRateScale.kr(bufnum))*randomAmplitudes[currTrial-1]
+            )
+        });
+        //play sample
+        x.play(s,[\bufnum, b]);
+        //record the click in numClicksRandomTone
+        numClicksRandomTone[currTrial-1]=numClicksRandomTone[currTrial-1]+1
+    }{};
+    //playUserTone button press
+    if(num==3){"[Amplitude] playUserTone button pressed".postln;
+        //set sample to user's amplitude
+        x = SynthDef(\help_Buffer, { arg out = 0, bufnum;
+            Out.ar( out,
+                PlayBuf.ar(2, bufnum, BufRateScale.kr(bufnum))*userToneAmplitude
+            )
+        });
+        //play sample
+        x.play(s,[\bufnum, b]);
+        //record the click in numClicksUserTone
+        numClicksUserTone[currTrial-1]=numClicksUserTone[currTrial-1]+1
+    }{};
+    if(num==26){"[Amplitude] Submit button pressed".postln;
+        //log user's amplitude guess in decibels
+        userAmplitudes[currTrial-1]=userToneAmplitude.ampdb;
+
+       //update current trial
+        currTrial=currTrial+1;
+
+        //free buffer
+        x.free;
+        b.free;
+
+        //load the next sample into buffer
+        loadSample.value(currTrial);
+        b=Buffer.read(s,p);
+
+        currTrial.asCompileString.postln;
+        if(currTrial==11){
+            "Your Amplitude Guesses".postln;
+            userAmplitudes.postln;
+            "True Amplitude".postln;
+            randomAmplitudesDB.postln;
+            "User Errors".postln;
+            calculateUserErrors.value(randomAmplitudesDB, userAmplitudes, userAmplitudeErrors);
+            "Random Tone Clicks".postln;
+            numClicksRandomTone.postln;
+            "User Tone Clicks".postln;
+            numClicksUserTone.postln;
+
+            //okokok
+
+            //record data into CSV
+            // trial #   numClicksUserTone   numClicksRandomTone   randomAmp   userAmp   error   timing
+            writeData.value(testvar, f, numClicksUserTone, numClicksRandomTone, randomAmplitudes, userAmplitudes, userAmplitudeErrors);
+            testvar=1;
+
+            //reset current trial counter
+            currTrial=1;
+            //reset numClicksUserTone
+            numClicksUserTone=[0,0,0,0,0,0,0,0,0,0];
+            //reset numClicksRandomTone
+            numClicksRandomTone=[0,0,0,0,0,0,0,0,0,0];
+            //close Amplitude window
+            {w.close;}.defer;
+            //open Frequency test window
+            {windowFreq.front;}.defer;
+        }{};
+        {currTrialText.string=currTrial+"/10";}.defer;
+
+    }{};
+    if(num==4){"[Frequency] playRandomTone button pressed".postln;}{};
+    if(num==6){"[Frequency] playUserTone button pressed".postln;}{};
+    if(num==27){"[Frequency] Submit button pressed".postln}{};
+
+});
+
+updateTrialText={arg trial;
+    currTrialText.string=currTrial+"/10";
+}
+
+
+
+
+)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+(
 
 //********************************************************************************************************************//
 //**************************************************                      *****************************************************//
@@ -362,8 +519,6 @@ frequencyFader.action_({
 //-------------------------------------------------------------------------------//
 
 userADSR=[0,0,0,0];
-
-
 
 //-----------------------------------------------------------------------------//
 //------------------------------GUI-----------------------------------------//
@@ -464,7 +619,6 @@ releaseFader=Slider(windowADSR,Rect(720, 200, 70, 400));
 releaseFader.action_({
     userADSR[3]=releaseFader.value;
 });
-
 
 
 )
