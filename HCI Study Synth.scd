@@ -1,20 +1,19 @@
+(
+f={"test func".postln;};
+f.value;
+)
 
 (
-var f, w, p, b, x, title, amplitudeFader, playRandomTone, playUserTone, submit, numTrials, currTrial, currTrialText, randomAmplitudes, userToneAmplitude, loadSample, userAmplitudes, attackFader, decayFader, sustainFader, releaseFader, windowADSR, adsr_title, adsr_currTrialText, adsr_playRandomTone, adsr_playUserTone, adsr_submit, userADSR, userAmplitudeErrors, calculateUserErrors, windowFreq, freq_title, freq_currTrialText, freq_playRandomTone, freq_playUserTone, freq_submit, randomFrequencies, userFrequencies, userToneFrequency, userFrequencyErrors, numClicksUserTone, numClicksRandomTone, frequencyFader, randomAmplitudesDB, writeData, testvar, updateTrialText;
-
-
-
+var f, w, p, b, x, title, amplitudeFader, playRandomTone, playUserTone, submit, numTrials, currTrial, currTrialText, randomAmplitudes, userToneAmplitude, loadSample, userAmplitudes, attackFader, decayFader, sustainFader, releaseFader, windowADSR, adsr_title, adsr_currTrialText, adsr_playRandomTone, adsr_playUserTone, adsr_submit, userADSR, userAmplitudeErrors, calculateUserErrors, windowFreq, freq_title, freq_currTrialText, freq_playRandomTone, freq_playUserTone, freq_submit, randomFrequencies, userFrequencies, userToneFrequency, userFrequencyErrors, numClicksUserTone, numClicksRandomTone, frequencyFader, randomAmplitudesDB, writeData, testvar, updateTrialText, postResults, testfunc;
 
 testvar=0;
 //--------------------------------------------------------------------------//
-//--------------------------Data Collection Functions-----------------------//
+//------------------------- Data Collection Functions ----------------------//
 //--------------------------------------------------------------------------//
 //goal: write to text file
 //open an existing file for writing and appending (writes happen at end)
 f=File("~/Documents/School/Project/user_1.txt".standardizePath,"a+");                                                         //change user # here <------------
-
-//close it for now
-f.close;
+f.close;//close it for now
 
 //calculates the errors for each user amplitude/frequency guess
 calculateUserErrors={
@@ -26,10 +25,8 @@ calculateUserErrors={
     errors.postln;
 };
 
-
-
 //Amplitude/Frequency Test CSV format:
-// trial #   numClicksUserTone   numClicksRandomTone   randomAmp   userAmp   error   timing
+//trial #   numClicksUserTone   numClicksRandomTone   randomAmp   userAmp   error   timing
 
 writeData={arg test, file, userClicks, randomClicks, randomVal, userVal, error /*, timing*/;
     file.open("~/Documents/School/Project/user_1.txt".standardizePath,"a+");                                                //change user # here <------------
@@ -39,46 +36,66 @@ writeData={arg test, file, userClicks, randomClicks, randomVal, userVal, error /
         arg i;
         //print trial number
         file.write((i+1).asCompileString ++ ", ");
-
         //print userClicks
         file.write(userClicks[i].asCompileString ++ ", ");
-
         //print randomClicks
         file.write(randomClicks[i].asCompileString ++ ", ");
-
         //print randomVal (amp or freq)
         file.write(randomVal[i].asCompileString ++ ", ");
-
         //print userVal
         file.write(userVal[i].asCompileString ++ ", ");
-
         //print error
         file.write(error[i].asCompileString ++ ", ");
-
         //print timing
-
 
         //print newline
         file.write("\n")
     });
-
     file.close;
 };
 
-//*********************************************************************************************************//
-//*********************************************************************************************************//
-//******************************************* AMPLITUDE TEST **********************************************//
-//*********************************************************************************************************//
-//*********************************************************************************************************//
+testfunc={"test func".postln};
+//function to print useful info to console
+postResults={
+    if(testvar==0){
+        "Your Amplitude Guesses".postln;
+        userAmplitudes.postln;
+        "True Amplitude".postln;
+        randomAmplitudesDB.postln;
+        "User Errors".postln;
+        calculateUserErrors.value(randomAmplitudesDB, userAmplitudes, userAmplitudeErrors);
+        "Random Tone Clicks".postln;
+        numClicksRandomTone.postln;
+        "User Tone Clicks".postln;
+        numClicksUserTone.postln;
+    }{};
+    if(testvar==1){
+        "Your Frequency Guesses".postln;
+        userFrequencies.postln;
+        "True Frequencies".postln;
+        randomFrequencies.postln;
+        "User Errors".postln;
+        calculateUserErrors.value(randomFrequencies, userFrequencies, userFrequencyErrors);
+        "Random Tone Clicks (frequency test)".postln;
+        numClicksRandomTone.postln;
+        "User Tone Clicks (frequency test)".postln;
+        numClicksUserTone.postln;
+    }{};
+};
+
+//***************************************************************************************************************************//
+//**********************************                                                   **************************************//
+//**********************************                  AMPLITUDE TEST                   **************************************//
+//**********************************                                                   **************************************//
+//***************************************************************************************************************************//
 
 numTrials=10;
 currTrial=1;
 numClicksUserTone=[0,0,0,0,0,0,0,0,0,0];
 numClicksRandomTone=[0,0,0,0,0,0,0,0,0,0];
 
-
 //------------------------------------------------------------------------------//
-//-----------------------------------SAMPLE LOADING-----------------------------//
+//------------------------------ SAMPLE LOADING --------------------------------//
 //------------------------------------------------------------------------------//
 
 //start server
@@ -138,102 +155,89 @@ currTrialText.align=\center;
 //------------------------------------------------------------------------//
 
 playRandomTone=Button(w, Rect(400,125,200,30))
-                      .states_([
-	                      ['Play Sample', Color.black, Color.white]
-                      ])
-                      .mouseDownAction_({
-	                      //play sample at random amplitude (based on trial)
-                          x = SynthDef(\help_Buffer, { arg out = 0, bufnum;
-                              Out.ar( out,
-                                  PlayBuf.ar(2, bufnum, BufRateScale.kr(bufnum))*randomAmplitudes[currTrial-1]
-                              )
-                          });
-                          //play sample
-	                      x.play(s,[\bufnum, b]);
-                          //record the click in numClicksRandomTone
-                          numClicksRandomTone[currTrial-1]=numClicksRandomTone[currTrial-1]+1
-                      })
-                      .action_({ arg butt;
-	                             //butt.value.postln;
-                      });
+.states_([
+    ['Play Sample', Color.black, Color.white]
+])
+.mouseDownAction_({
+    //play sample at random amplitude (based on trial)
+    x = SynthDef(\help_Buffer, { arg out = 0, bufnum;
+        Out.ar( out,
+            PlayBuf.ar(2, bufnum, BufRateScale.kr(bufnum))*randomAmplitudes[currTrial-1]
+        )
+    });
+    //play sample
+    x.play(s,[\bufnum, b]);
+    //record the click in numClicksRandomTone
+    numClicksRandomTone[currTrial-1]=numClicksRandomTone[currTrial-1]+1
+})
+.action_({ arg butt;
+    //butt.value.postln;
+});
 
 playUserTone=Button(w, Rect(400,650,200,30))
-                      .states_([
-	                      ['Play User Tone', Color.black, Color.white]
-                      ])
-                      .mouseDownAction_({
-                          //set sample to user's amplitude
-                          x = SynthDef(\help_Buffer, { arg out = 0, bufnum;
-                              Out.ar( out,
-                                  PlayBuf.ar(2, bufnum, BufRateScale.kr(bufnum))*userToneAmplitude
-                              )
-                          });
-                          //play sample
-	                      x.play(s,[\bufnum, b]);
-                          //record the click in numClicksUserTone
-                          numClicksUserTone[currTrial-1]=numClicksUserTone[currTrial-1]+1
-                      })
-                      .action_({ arg butt;
-	                             //butt.value.postln;
-                      });
+.states_([
+    ['Play User Tone', Color.black, Color.white]
+])
+.mouseDownAction_({
+    //set sample to user's amplitude
+    x = SynthDef(\help_Buffer, { arg out = 0, bufnum;
+        Out.ar( out,
+            PlayBuf.ar(2, bufnum, BufRateScale.kr(bufnum))*userToneAmplitude
+        )
+    });
+    //play sample
+    x.play(s,[\bufnum, b]);
+    //record the click in numClicksUserTone
+    numClicksUserTone[currTrial-1]=numClicksUserTone[currTrial-1]+1
+})
+.action_({ arg butt;
+    //butt.value.postln;
+});
 
 submit=Button(w, Rect(750,650,100,30))
-                      .states_([
-	                      ['Submit', Color.black, Color.white]
-                      ])
-                      .mouseDownAction_({
-	                      f.open("~/Documents/School/Project/test.txt".standardizePath,"a+");
-	                      f.write("submit button was pressed down.\n");
-	                      f.close;
-                          //w.close;
-                      })
-                      .action_({
-	                             //log user's amplitude guess in decibels
-	                             userAmplitudes[currTrial-1]=userToneAmplitude.ampdb;
+.states_([
+    ['Submit', Color.black, Color.white]
+])
+.mouseDownAction_({
+    f.open("~/Documents/School/Project/test.txt".standardizePath,"a+");
+    f.write("submit button was pressed down.\n");
+    f.close;
+    //w.close;
+})
+.action_({
+    //log user's amplitude guess in decibels
+    userAmplitudes[currTrial-1]=userToneAmplitude.ampdb;
 
-	                             //update current trial
-	                             currTrial=currTrial+1;
+    //update current trial
+    currTrial=currTrial+1;
 
-	                             //free buffer
-                                 x.free;
-	                             b.free;
+    //free buffer
+    x.free;
+    b.free;
 
-	                             //load the next sample into buffer
-	                             loadSample.value(currTrial);
-                                 b=Buffer.read(s,p);
+    //load the next sample into buffer
+    loadSample.value(currTrial);
+    b=Buffer.read(s,p);
 
-	                             if(currTrial==11)
-                                      {"Your Amplitude Guesses".postln;
-                                      userAmplitudes.postln;
-                                      "True Amplitude".postln;
-                                      randomAmplitudesDB.postln;
-                                      "User Errors".postln;
-                                      calculateUserErrors.value(randomAmplitudesDB, userAmplitudes, userAmplitudeErrors);
-                                      "Random Tone Clicks".postln;
-                                      numClicksRandomTone.postln;
-                                      "User Tone Clicks".postln;
-                                      numClicksUserTone.postln;
-                                      //record data into CSV
-                                      // trial #   numClicksUserTone   numClicksRandomTone   randomAmp   userAmp   error   timing
-                                      writeData.value(testvar, f, numClicksUserTone, numClicksRandomTone, randomAmplitudes, userAmplitudes, userAmplitudeErrors);
-                                      testvar=1;
+    if(currTrial==11){
+        postResults.value;
+        testfunc;
+        //record data into CSV
+        writeData.value(testvar, f, numClicksUserTone, numClicksRandomTone, randomAmplitudes, userAmplitudes, userAmplitudeErrors);
+        testvar=1;
 
-                                      //reset current trial counter
-                                      currTrial=1;
-                                      //reset numClicksUserTone
-                                      numClicksUserTone=[0,0,0,0,0,0,0,0,0,0];
-                                      //reset numClicksRandomTone
-                                      numClicksRandomTone=[0,0,0,0,0,0,0,0,0,0];
-                                      //close Amplitude window
-		                              w.close;
-                                      //open Frequency test window
-                                      windowFreq.front;}{};
-	                             currTrialText.string=currTrial+"/10";
-                      });
-
-
-
-
+        //reset current trial counter
+        currTrial=1;
+        //reset numClicksUserTone
+        numClicksUserTone=[0,0,0,0,0,0,0,0,0,0];
+        //reset numClicksRandomTone
+        numClicksRandomTone=[0,0,0,0,0,0,0,0,0,0];
+        //close Amplitude window
+        w.close;
+        //open Frequency test window
+        windowFreq.front;}{};
+    currTrialText.string=currTrial+"/10";
+});
 
 //-----------------------------------------------------------------------------------------//
 //-----------------------------AMPLITUDE FADER---------------------------------//
@@ -249,9 +253,9 @@ amplitudeFader.action_({
 w.front; //make the window appear
 
 //***************************************************************************************************************************//
-//**************************************************                                   *****************************************************//
-//************************************************** FREQUENCY TEST *****************************************************//
-//**************************************************                                   *****************************************************//
+//**********************************                                                   **************************************//
+//**********************************                  FREQUENCY TEST                   **************************************//
+//**********************************                                                   **************************************//
 //***************************************************************************************************************************//
 
 x = SynthDef(\freq_Test, { arg freq=440;
@@ -262,7 +266,7 @@ x = SynthDef(\freq_Test, { arg freq=440;
 }).add;
 
 //-------------------------------------------------------------------------------//
-//------------------------DATA COLLECTION---------------------------//
+//--------------------------------DATA COLLECTION--------------------------------//
 //-------------------------------------------------------------------------------//
 
 randomFrequencies=[440, 880, 346, 1356, 2594, 4927, 836, 3875, 440, 1747];
@@ -271,7 +275,7 @@ userToneFrequency=0;
 userFrequencyErrors=[0,0,0,0,0,0,0,0,0,0];
 
 //-----------------------------------------------------------------------------//
-//------------------------------GUI-----------------------------------------//
+//---------------------------------GUI-----------------------------------------//
 //-----------------------------------------------------------------------------//
 
 windowFreq=Window("Frequency Test", Rect(100, 500, 1000, 700));
@@ -284,91 +288,74 @@ freq_currTrialText=StaticText(windowFreq, Rect(850, 650, 100, 30)).string_(currT
 freq_currTrialText.align=\center;
 
 //------------------------------------------------------------------------//
-//---------------------------BUTTONS-------------------------------//
+//--------------------------------BUTTONS---------------------------------//
 //------------------------------------------------------------------------//
 
 freq_playRandomTone=Button(windowFreq, Rect(300,125,400,30))
-                      .states_([
-                          ['Play Sine Tone (random frequency)', Color.black, Color.white]
-                      ])
-                      .mouseDownAction_({
-	                      //play sine tone at random frequency
-                          Synth(\freq_Test, [\freq, randomFrequencies[currTrial-1]]);
-
-                          //record the click in numClicksRandomTone
-                          numClicksRandomTone[currTrial-1]=numClicksRandomTone[currTrial-1]+1
-
-                      })
-                      .action_({ arg butt;
-	                             //butt.value.postln;
-                      });
+.states_([
+    ['Play Sine Tone (random frequency)', Color.black, Color.white]
+])
+.mouseDownAction_({
+    //play sine tone at random frequency
+    Synth(\freq_Test, [\freq, randomFrequencies[currTrial-1]]);
+    //record the click in numClicksRandomTone
+    numClicksRandomTone[currTrial-1]=numClicksRandomTone[currTrial-1]+1
+})
+.action_({ arg butt;
+    //butt.value.postln;
+});
 
 freq_playUserTone=Button(windowFreq, Rect(300,650,400,30))
-                      .states_([
-                          ['Play User Sine Tone (Random Frequency)', Color.black, Color.white]
-                      ])
-                      .mouseDownAction_({
-                          //play sine tone at user frequency
-                          Synth(\freq_Test, [\freq, userToneFrequency]);
-                          //record the click in numClicksUserTone
-                          numClicksUserTone[currTrial-1]=numClicksUserTone[currTrial-1]+1
-                      })
-                      .action_({ arg butt;
-	                             //butt.value.postln;
-                      });
+.states_([
+    ['Play User Sine Tone (Random Frequency)', Color.black, Color.white]
+])
+.mouseDownAction_({
+    //play sine tone at user frequency
+    Synth(\freq_Test, [\freq, userToneFrequency]);
+    //record the click in numClicksUserTone
+    numClicksUserTone[currTrial-1]=numClicksUserTone[currTrial-1]+1
+})
+.action_({ arg butt;
+    //butt.value.postln;
+});
 
 freq_submit=Button(windowFreq, Rect(750,650,100,30))
-                      .states_([
-	                      ['Submit', Color.black, Color.white]
-                      ])
-                      .mouseDownAction_({
-	                      f.open("~/Documents/School/Project/test.txt".standardizePath,"a+");
-	                      f.write("frequency submit button was pressed down.\n");
-	                      f.close;
-                          //w.close;
-                      })
-                      .action_({
-	                             //log user's FREQUENCY guess
-	                             userFrequencies[currTrial-1]=userToneFrequency;
+.states_([
+    ['Submit', Color.black, Color.white]
+])
+.mouseDownAction_({
+    f.open("~/Documents/School/Project/test.txt".standardizePath,"a+");
+    f.write("frequency submit button was pressed down.\n");
+    f.close;
+})
+.action_({
+    //log user's FREQUENCY guess
+    userFrequencies[currTrial-1]=userToneFrequency;
 
-	                             //update current trial
-	                             currTrial=currTrial+1;
+    //update current trial
+    currTrial=currTrial+1;
 
+    if(currTrial==11){
+        postResults.value;
 
-                                 //load the next frequency into sin wave (?)
+        //record data into CSV
+        // trial #   numClicksUserTone   numClicksRandomTone   randomFreq   userFreq  error   timing
+        writeData.value(testvar, f, numClicksUserTone, numClicksRandomTone, randomFrequencies, userFrequencies, userFrequencyErrors);
 
+        currTrial=1;
+        //reset numClicksUserTone
+        numClicksUserTone=[0,0,0,0,0,0,0,0,0,0];
+        //reset numClicksRandomTone
+        numClicksRandomTone=[0,0,0,0,0,0,0,0,0,0];
+        windowFreq.close;
 
-	                             if(currTrial==11)
-                                      {"Your Frequency Guesses".postln;
-                                      userFrequencies.postln;
-                                      "True Frequencies".postln;
-                                      randomFrequencies.postln;
-                                      "User Errors".postln;
-                                      calculateUserErrors.value(randomFrequencies, userFrequencies, userFrequencyErrors);
+    /*windowADSR.front;*/}{};
+    freq_currTrialText.string=currTrial+"/10";
+});
 
-                                      "Random Tone Clicks (frequency test)".postln;
-                                      numClicksRandomTone.postln;
-                                      "User Tone Clicks (frequency test)".postln;
-                                      numClicksUserTone.postln;
-
-                                      //record data into CSV
-                                      // trial #   numClicksUserTone   numClicksRandomTone   randomFreq   userFreq  error   timing
-                                      writeData.value(testvar, f, numClicksUserTone, numClicksRandomTone, randomFrequencies, userFrequencies, userFrequencyErrors);
-
-                                      currTrial=1;
-                                      //reset numClicksUserTone
-                                      numClicksUserTone=[0,0,0,0,0,0,0,0,0,0];
-                                      //reset numClicksRandomTone
-                                      numClicksRandomTone=[0,0,0,0,0,0,0,0,0,0];
-		                              windowFreq.close;
-
-                                      /*windowADSR.front;*/}{};
-	                             freq_currTrialText.string=currTrial+"/10";
-                      });
-
-//-----------------------------------------------------------------------------------------//
-//-----------------------------FREQUENCY FADER--------------------------------//
-//-----------------------------------------------------------------------------------------//
+//--------------------------------------------------------------------------------//
+//---------------------------------FREQUENCY FADER--------------------------------//
+//--------------------------------------------------------------------------------//
 
 frequencyFader=Slider(windowFreq,Rect(470, 200, 70, 400));
 
@@ -378,7 +365,6 @@ frequencyFader.action_({
 
 });
 
-
 //--------------------------------------------------------------------------//
 //--------------------------------MIDI Stuff--------------------------------//
 //--------------------------------------------------------------------------//
@@ -386,10 +372,26 @@ frequencyFader.action_({
 MIDIClient.init;
 MIDIIn.connectAll;
 MIDIClient.sources;
+
+MIDIdef.cc(\fader, {arg val, num, chan, src;
+    "fader incoming".postln;
+    //[src,chan, num, val].postln;
+    if(num==19){
+        {amplitudeFader.value=(val/127);}.defer;
+        {userToneAmplitude=amplitudeFader.value.linlin(0,1,-48,0).dbamp;}.defer;
+    }{};
+    if(num==23){
+        {frequencyFader.value=(val/127);}.defer;
+        {userToneFrequency= (10**(frequencyFader.value.linlin(0,1,log10(220),log10(20000))));}.defer;
+    }{};
+
+});
+
 MIDIdef.noteOn(\print, {arg val, num, chan, src;
     //[src,chan, num, val].postln;
     //playRandomTone button press
-    if(num==1){"[Amplitude] playRandomTone button pressed".postln;
+    if(num==1){
+        "[Amplitude] playRandomTone button pressed".postln;
         //play sample at random amplitude (based on trial)
         x = SynthDef(\help_Buffer, { arg out = 0, bufnum;
             Out.ar( out,
@@ -399,10 +401,11 @@ MIDIdef.noteOn(\print, {arg val, num, chan, src;
         //play sample
         x.play(s,[\bufnum, b]);
         //record the click in numClicksRandomTone
-        numClicksRandomTone[currTrial-1]=numClicksRandomTone[currTrial-1]+1
+        numClicksRandomTone[currTrial-1]=numClicksRandomTone[currTrial-1]+1;
     }{};
     //playUserTone button press
-    if(num==3){"[Amplitude] playUserTone button pressed".postln;
+    if(num==3){
+        "[Amplitude] playUserTone button pressed".postln;
         //set sample to user's amplitude
         x = SynthDef(\help_Buffer, { arg out = 0, bufnum;
             Out.ar( out,
@@ -412,9 +415,10 @@ MIDIdef.noteOn(\print, {arg val, num, chan, src;
         //play sample
         x.play(s,[\bufnum, b]);
         //record the click in numClicksUserTone
-        numClicksUserTone[currTrial-1]=numClicksUserTone[currTrial-1]+1
+        numClicksUserTone[currTrial-1]=numClicksUserTone[currTrial-1]+1;
     }{};
-    if(num==26){"[Amplitude] Submit button pressed".postln;
+    if(num==26){
+        "[Amplitude] Submit button pressed".postln;
         //log user's amplitude guess in decibels
         userAmplitudes[currTrial-1]=userToneAmplitude.ampdb;
 
@@ -429,26 +433,12 @@ MIDIdef.noteOn(\print, {arg val, num, chan, src;
         loadSample.value(currTrial);
         b=Buffer.read(s,p);
 
-        currTrial.asCompileString.postln;
         if(currTrial==11){
-            "Your Amplitude Guesses".postln;
-            userAmplitudes.postln;
-            "True Amplitude".postln;
-            randomAmplitudesDB.postln;
-            "User Errors".postln;
-            calculateUserErrors.value(randomAmplitudesDB, userAmplitudes, userAmplitudeErrors);
-            "Random Tone Clicks".postln;
-            numClicksRandomTone.postln;
-            "User Tone Clicks".postln;
-            numClicksUserTone.postln;
-
-            //okokok
-
+            postResults.value;
             //record data into CSV
-            // trial #   numClicksUserTone   numClicksRandomTone   randomAmp   userAmp   error   timing
             writeData.value(testvar, f, numClicksUserTone, numClicksRandomTone, randomAmplitudes, userAmplitudes, userAmplitudeErrors);
+            //0 means Amp test, 1 means Freq test
             testvar=1;
-
             //reset current trial counter
             currTrial=1;
             //reset numClicksUserTone
@@ -461,17 +451,54 @@ MIDIdef.noteOn(\print, {arg val, num, chan, src;
             {windowFreq.front;}.defer;
         }{};
         {currTrialText.string=currTrial+"/10";}.defer;
+    }{};
+    if(num==4){
+        "[Frequency] playRandomTone button pressed".postln;
+        //play sine tone at user frequency
+        Synth(\freq_Test, [\freq, randomFrequencies[currTrial-1]]);
+
+
+        //record the click in numClicksUserTone
+        numClicksRandomTone[currTrial-1]=numClicksRandomTone[currTrial-1]+1;
+
 
     }{};
-    if(num==4){"[Frequency] playRandomTone button pressed".postln;}{};
-    if(num==6){"[Frequency] playUserTone button pressed".postln;}{};
-    if(num==27){"[Frequency] Submit button pressed".postln}{};
+    if(num==6){
+        "[Frequency] playUserTone button pressed".postln;
+        //play sine tone at user frequency
+        Synth(\freq_Test, [\freq, userToneFrequency]);
+        //record the click in numClicksUserTone
+        numClicksUserTone[currTrial-1]=numClicksUserTone[currTrial-1]+1;
+    }{};
+    if(num==27){
+        //log user's FREQUENCY guess
+        userFrequencies[currTrial-1]=userToneFrequency;
+
+        //update current trial
+        currTrial=currTrial+1;
+
+        if(currTrial==11){
+            postResults.value;
+
+            //record data into CSV
+            // trial #   numClicksUserTone   numClicksRandomTone   randomFreq   userFreq  error   timing
+            writeData.value(testvar, f, numClicksUserTone, numClicksRandomTone, randomFrequencies, userFrequencies, userFrequencyErrors);
+
+            currTrial=1;
+            //reset numClicksUserTone
+            numClicksUserTone=[0,0,0,0,0,0,0,0,0,0];
+            //reset numClicksRandomTone
+            numClicksRandomTone=[0,0,0,0,0,0,0,0,0,0];
+            {windowFreq.close;}.defer;
+
+            /*windowADSR.front;*/
+        }{};
+        {freq_currTrialText.string=currTrial+"/10";}.defer;
+    }{};
 
 });
 
-updateTrialText={arg trial;
-    currTrialText.string=currTrial+"/10";
-}
+
 
 
 
