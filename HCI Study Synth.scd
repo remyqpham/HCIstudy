@@ -1,7 +1,42 @@
+
 (
-f={"test func".postln;};
-f.value;
+
+var w, val, title, playRandomTone, trig;
+
+w=Window("Amplitude Test", Rect(50,50,1000,700));
+//coordinates: (x,y)=(100, 500)  dimensions: width*length =1000*700
+
+title = StaticText(w,Rect(250,25,500,75)).string_("Test");
+title.align=\center;
+title.font=Font("Monaco", 50, true);
+
+playRandomTone=Button(w, Rect(400,125,200,30))
+.states_([
+    ['Play Sample', Color.black, Color.white]
+])
+.mouseDownAction_({
+    trig=1;
+    val=Timer.kr(trig).asFloat;
+    val.postln;
+    trig=0;
+})
+.action_({ arg butt;
+    //butt.value.postln;
+});
+
+w.front;
+
+
 )
+// using timer to modulate sine frequency: the slower the trigger is the higher the frequency
+(
+{ var trig;
+    trig = Impulse.kr(MouseX.kr(0.5, 20, 1));
+    SinOsc.ar(Timer.kr(trig) * 500 + 500, 0, 0.2)
+}.play;
+)
+
+
 
 (
 var f, w, p, b, x, title, amplitudeFader, playRandomTone, playUserTone, submit, numTrials, currTrial, currTrialText, randomAmplitudes, userToneAmplitude, loadSample, userAmplitudes, attackFader, decayFader, sustainFader, releaseFader, windowADSR, adsr_title, adsr_currTrialText, adsr_playRandomTone, adsr_playUserTone, adsr_submit, userADSR, userAmplitudeErrors, calculateUserErrors, windowFreq, freq_title, freq_currTrialText, freq_playRandomTone, freq_playUserTone, freq_submit, randomFrequencies, userFrequencies, userToneFrequency, userFrequencyErrors, numClicksUserTone, numClicksRandomTone, frequencyFader, randomAmplitudesDB, writeData, testvar, updateTrialText, postResults, testfunc;
@@ -374,7 +409,7 @@ MIDIIn.connectAll;
 MIDIClient.sources;
 
 MIDIdef.cc(\fader, {arg val, num, chan, src;
-    "fader incoming".postln;
+    //"fader incoming".postln;
     //[src,chan, num, val].postln;
     if(num==19){
         {amplitudeFader.value=(val/127);}.defer;
@@ -391,7 +426,7 @@ MIDIdef.noteOn(\print, {arg val, num, chan, src;
     //[src,chan, num, val].postln;
     //playRandomTone button press
     if(num==1){
-        "[Amplitude] playRandomTone button pressed".postln;
+        //"[Amplitude] playRandomTone button pressed".postln;
         //play sample at random amplitude (based on trial)
         x = SynthDef(\help_Buffer, { arg out = 0, bufnum;
             Out.ar( out,
@@ -405,7 +440,7 @@ MIDIdef.noteOn(\print, {arg val, num, chan, src;
     }{};
     //playUserTone button press
     if(num==3){
-        "[Amplitude] playUserTone button pressed".postln;
+        //"[Amplitude] playUserTone button pressed".postln;
         //set sample to user's amplitude
         x = SynthDef(\help_Buffer, { arg out = 0, bufnum;
             Out.ar( out,
@@ -418,7 +453,7 @@ MIDIdef.noteOn(\print, {arg val, num, chan, src;
         numClicksUserTone[currTrial-1]=numClicksUserTone[currTrial-1]+1;
     }{};
     if(num==26){
-        "[Amplitude] Submit button pressed".postln;
+        //"[Amplitude] Submit button pressed".postln;
         //log user's amplitude guess in decibels
         userAmplitudes[currTrial-1]=userToneAmplitude.ampdb;
 
@@ -453,18 +488,14 @@ MIDIdef.noteOn(\print, {arg val, num, chan, src;
         {currTrialText.string=currTrial+"/10";}.defer;
     }{};
     if(num==4){
-        "[Frequency] playRandomTone button pressed".postln;
+        //"[Frequency] playRandomTone button pressed".postln;
         //play sine tone at user frequency
         Synth(\freq_Test, [\freq, randomFrequencies[currTrial-1]]);
-
-
         //record the click in numClicksUserTone
         numClicksRandomTone[currTrial-1]=numClicksRandomTone[currTrial-1]+1;
-
-
     }{};
     if(num==6){
-        "[Frequency] playUserTone button pressed".postln;
+        //"[Frequency] playUserTone button pressed".postln;
         //play sine tone at user frequency
         Synth(\freq_Test, [\freq, userToneFrequency]);
         //record the click in numClicksUserTone
@@ -473,36 +504,23 @@ MIDIdef.noteOn(\print, {arg val, num, chan, src;
     if(num==27){
         //log user's FREQUENCY guess
         userFrequencies[currTrial-1]=userToneFrequency;
-
         //update current trial
         currTrial=currTrial+1;
-
         if(currTrial==11){
             postResults.value;
-
             //record data into CSV
-            // trial #   numClicksUserTone   numClicksRandomTone   randomFreq   userFreq  error   timing
             writeData.value(testvar, f, numClicksUserTone, numClicksRandomTone, randomFrequencies, userFrequencies, userFrequencyErrors);
-
             currTrial=1;
             //reset numClicksUserTone
             numClicksUserTone=[0,0,0,0,0,0,0,0,0,0];
             //reset numClicksRandomTone
             numClicksRandomTone=[0,0,0,0,0,0,0,0,0,0];
             {windowFreq.close;}.defer;
-
             /*windowADSR.front;*/
         }{};
         {freq_currTrialText.string=currTrial+"/10";}.defer;
     }{};
-
 });
-
-
-
-
-
-
 )
 
 
